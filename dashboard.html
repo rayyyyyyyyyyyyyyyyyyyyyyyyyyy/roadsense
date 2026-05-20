@@ -261,8 +261,18 @@
 
             const surveyId = Date.now() + Math.random();
             importedSurveyIds.push(surveyId);
+            
+            // Extract folder name if available
+            let displayFileName = file.name;
+            if (file.webkitRelativePath) {
+                const parts = file.webkitRelativePath.split('/');
+                if (parts.length > 1) {
+                    displayFileName = parts[0]; // Show just the folder name e.g. "Survey_20260520"
+                }
+            }
+
             const txSurvey = db.transaction('surveys', 'readwrite');
-            txSurvey.objectStore('surveys').put({ id: surveyId, fileName: file.name });
+            txSurvey.objectStore('surveys').put({ id: surveyId, fileName: displayFileName });
             await transactionDone(txSurvey);
             
             const txDet = db.transaction('detections', 'readwrite');
