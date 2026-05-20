@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadSense Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.1.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+    <link rel="stylesheet" href="style.css">
+    
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBz-SFi9WLqPWB5CIlKS5DAqhZCMVt_bpY&loading=async&libraries=marker&callback=initDashboard"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        // ใช้ callback สำหรับ Google Maps API เพื่อรับประกันว่า API โหลดเสร็จก่อนสร้าง Map
+        window.initDashboard = async function() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 26.5265, lng: 128.0303 }, zoom: 15, mapId: "ROADSENSE_DASHBOARD"
+            });
+            infoWindow = new google.maps.InfoWindow();
+            initCharts();
+            await openDB();
+            await refreshAll(true);
+        };
+    </script>
+
+
+    <style>
+        .custom-marker { cursor: pointer; transition: transform 0.15s ease-out; }
+        .custom-marker:hover { transform: translate(-50%, -50%) scale(1.15) !important; z-index: 1000 !important; }
+        .iw-header { display: flex; align-items: center; height: 32px; margin-bottom: 8px; }
+        .chart-container { position: relative; height: 250px; width: 100%; }
+        
+        .badge-normal { background: #dcfce7; color: #166534; }
+        
+        .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+        
+        @media (max-width: 1024px) { .stats-row { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 640px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:9999; align-items:center; justify-content:center; flex-direction:column; gap:16px;">
+        <div style="width:48px; height:48px; border:4px solid rgba(255,255,255,0.2); border-top-color:#60a5fa; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+        <span style="color:#e2e8f0; font-size:14px; font-family:var(--font);">กำลังประมวลผล...</span>
+        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    </div>
+
+    <header class="app-header">
+        <div>
+            <h1><span class="logo-icon">R</span> RoadSense</h1>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="stats-row">
+            <div class="stat-card" style="border: 2px; background-color: #ffffff;">
+                <div class="stat-label" style="color: #64748b;">จุดที่พบทั้งหมด</div>
+                <div class="stat-value" id="statTotal" style="color: #334155;">0</div>
+            </div>
+            <div class="stat-card" style="border: 2px; background-color: #ffffff;">
+                <div class="stat-label" style="color: #ef4444;">วิกฤต (แดง)</div>
+                <div class="stat-value" id="statCritical" style="color: #ef4444;">0</div>
+            </div>
+            <div class="stat-card" style="border: 2px; background-color: #ffffff;">
+                <div class="stat-label" style="color: #f97316;">เร่งด่วน (ส้ม)</div>
+                <div class="stat-value" id="statUrgent" style="color: #f97316;">0</div>
+            </div>
+            <div class="stat-card" style="border: 2px; background-color: #ffffff;">
+                <div class="stat-label" style="color: #a16207;">เฝ้าระวัง (เหลือง)</div>
+                <div class="stat-value" id="statModerate" style="color: #a16207;">0</div>
+            </div>
+            <div class="stat-card" style="border: 2px; background-color: #ffffff;">
+                <div class="stat-label" style="color: #166534;">ปกติ (เขียว)</div>
+                <div class="stat-value" id="statNormal" style="color: #166534;">0</div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <h2><i class="fi fi-rr-settings-sliders"></i> จัดการข้อมูลและการวิเคราะห์</h2>
+            </div>
+            <div class="card-body">
+                <div class="control-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="control-section">
+                        <label>อัปโหลดโฟลเดอร์โครงการ (CSV + Images)</label>
+                        <div class="upload-zone" id="dropZone">
+                            <div class="icon"><i class="fi fi-rr-cloud-upload"></i></div>
+                            <div class="text">ลากไฟล์มาวาง หรือเลือกวิธีด้านล่าง</div>
+                            <div style="display: flex; gap: 8px; justify-content: center;">
+                                <button class="btn btn-primary btn-sm" onclick="document.getElementById('folderInput').click()">เลือกโฟลเดอร์</button>
+                                <button class="btn btn-sm" onclick="document.getElementById('fileInput').click()">เลือกหลายไฟล์</button>
+                            </div>
+                        </div>
+                        <input type="file" id="folderInput" webkitdirectory directory multiple>
+                        <input type="file" id="fileInput" multiple accept=".csv, image/*">
+                        <div id="uploadStatus" style="margin-top:8px; font-size:11px; color:var(--text-muted); text-align:center;"></div>
+                    </div>
+
+                    <div class="control-section">
+                        <label>ตั้งค่าระดับการวิเคราะห์</label>
+                        <div class="slider-group">
+                            <span>วิกฤต (แดง):</span>
+                            <input type="range" id="criticalSlider" min="1.0" max="2.0" step="0.05" value="1.2">
+                            <span class="slider-val" id="criticalVal" style="color:#ef4444;">1.20</span>
+                        </div>
+                        <div class="slider-group">
+                            <span>เร่งด่วน (ส้ม):</span>
+                            <input type="range" id="upperSlider" min="0.5" max="1.5" step="0.05" value="1.0">
+                            <span class="slider-val" id="upperVal" style="color:#f97316;">1.00</span>
+                        </div>
+                        <div class="slider-group">
+                            <span>เฝ้าระวัง (เหลือง):</span>
+                            <input type="range" id="lowerSlider" min="0.1" max="1.5" step="0.05" value="0.7">
+                            <span class="slider-val" id="lowerVal" style="color:#eab308;">0.70</span>
+                        </div>
+                        
+                        <div style="margin-top: 12px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 12px;">
+                            <strong style="color: var(--text-muted);">คำอธิบายเกณฑ์ความรุนแรงปัจจุบัน:</strong>
+                            <ul style="list-style: none; margin-top: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <li>🔴 วิกฤต: <strong id="descCritical" style="color:#ef4444;">≥ 1.20 G</strong></li>
+                                <li>🟠 เร่งด่วน: <strong id="descUrgent" style="color:#f97316;">1.00 - 1.19 G</strong></li>
+                                <li>🟡 เฝ้าระวัง: <strong id="descModerate" style="color:#eab308;">0.70 - 0.99 G</strong></li>
+                                <li>🟢 ปกติ: <strong id="descNormal" style="color:#22c55e;">&lt; 0.70 G</strong></li>
+                            </ul>
+                            <p style="font-size:10px; color:var(--text-light); margin-top:8px;">* หมุดสีเขียว (ปกติ) จะถูกซ่อนจากแผนที่โดยอัตโนมัติ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div id="map"></div>
+            <div class="map-legend">
+                <strong>ระดับความเสียหาย:</strong>
+                <div style="display: flex; align-items: center; gap: 16px; margin-left: 8px;">
+                    <span style="display:flex; align-items:center; gap:4px;"><div style="width:12px; height:12px; border-radius:50%; background:#eab308;"></div> เฝ้าระวัง</span>
+                    <span style="display:flex; align-items:center; gap:4px;"><div style="width:12px; height:12px; border-radius:50%; background:#f97316;"></div> เร่งด่วน</span>
+                    <span style="display:flex; align-items:center; gap:4px;"><div style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div> วิกฤต</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <h2><i class="fi fi-rr-list"></i> รายละเอียดลำดับความเสียหาย</h2>
+                <div class="table-controls">
+                    <button class="filter-btn active" onclick="filterTable('all', this)">ทั้งหมด</button>
+                    <button class="filter-btn" onclick="filterTable('critical', this)">วิกฤต</button>
+                    <button class="filter-btn" onclick="filterTable('urgent', this)">เร่งด่วน</button>
+                    <button class="filter-btn" onclick="filterTable('moderate', this)">เฝ้าระวัง</button>
+                    <button class="filter-btn" onclick="filterTable('normal', this)">ปกติ</button>
+                </div>
+            </div>
+            <div class="priority-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ลำดับ</th>
+                            <th>ระดับ</th>
+                            <th>แรงสั่น (G)</th>
+                            <th>ความเร็ว (km/h)</th>
+
+                            <th>พิกัด (Lat, Lon)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+                <div id="tableEmpty" style="text-align:center; padding: 40px; color:var(--text-muted);">ไม่พบข้อมูล</div>
+            </div>
+        </section>
+
+        <section class="charts-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fi fi-rr-chart-line-up"></i> กราฟแรงสั่นสะเทือน</h2>
+                    <div class="segmented-control" aria-label="โหมดกราฟแรงสั่นสะเทือน">
+                        <button class="segment-btn active" data-chart-mode="events" onclick="setChartMode('events', this)">Events</button>
+                        <button class="segment-btn" data-chart-mode="raw" onclick="setChartMode('raw', this)">Raw samples</button>
+                    </div>
+                </div>
+                <div class="card-body"><div class="chart-container"><canvas id="zForceChart"></canvas></div></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h2><i class="fi fi-rr-chart-pie"></i> สัดส่วนระดับความเสียหาย</h2></div>
+                <div class="card-body"><div class="chart-container"><canvas id="severityChart"></canvas></div></div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <h2><i class="fi fi-rr-folder-open"></i> รายการไฟล์การสำรวจ</h2>
+                <button class="btn btn-danger btn-sm" onclick="clearAllData()">
+                    <i class="fi fi-rr-trash"></i> ล้างข้อมูลทั้งหมด
+                </button>
+            </div>
+            <div id="surveyList" class="card-body"></div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+    const DB_NAME = 'RoadSenseDB', DB_VERSION = 2;
+    const DATA_MAX_ACC_CM = 5000;
+    let db = null, map, infoWindow;
+    let allMarkers = [], allDetections = [], zForceChart, severityChart, currentFilter = 'all';
+    let chartMode = 'events';
+
+    function openDB() {
+        return new Promise((resolve) => {
+            const req = indexedDB.open(DB_NAME, DB_VERSION);
+            req.onupgradeneeded = (e) => {
+                const d = e.target.result;
+                if (!d.objectStoreNames.contains('surveys')) d.createObjectStore('surveys', { keyPath: 'id', autoIncrement: true });
+                if (!d.objectStoreNames.contains('detections')) d.createObjectStore('detections', { keyPath: 'id', autoIncrement: true });
+                if (!d.objectStoreNames.contains('images')) d.createObjectStore('images', { keyPath: 'fileName' });
+            };
+            req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+        });
+    }
+
+    async function processFiles(files) {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        const status = document.getElementById('uploadStatus');
+        let csvFiles = [], imagesToSave = [];
+        const importedSurveyIds = [];
+        status.textContent = "กำลังนำเข้าข้อมูล...";
+        
+        for (const file of files) {
+            if (file.name.endsWith('.csv')) csvFiles.push(file);
+            else if (file.type.startsWith('image/')) imagesToSave.push({ fileName: file.name, fileData: file });
+        }
+
+        const txImg = db.transaction('images', 'readwrite');
+        imagesToSave.forEach(img => txImg.objectStore('images').put(img));
+        await transactionDone(txImg);
+
+        for (const file of csvFiles) {
+            const text = await file.text();
+            const lines = text.split('\n');
+            if (lines.length < 2) continue;
+            
+            const h = lines[0].split(',').map(s => s.trim().toLowerCase());
+            
+            const latIdx = h.findIndex(c => c.includes('latitude') || c === 'lat');
+            const lonIdx = h.findIndex(c => c.includes('longitude') || c === 'lon' || c === 'lng');
+            const spdIdx = h.findIndex(c => c.includes('speed'));
+            const vibIdx = h.findIndex(c => c.includes('vibration') || c.includes('impact'));
+            const timeIdx = h.findIndex(c => c.includes('time') || c.includes('date') || c.includes('count'));
+            const imgIdx = h.findIndex(c => c.includes('image'));
+            const eventIdx = h.findIndex(c => c.includes('event'));
+            const accIdx = h.findIndex(c => c.includes('acc_cm') || c.includes('accuracy'));
+            
+            if (latIdx === -1 || lonIdx === -1 || vibIdx === -1) {
+                console.warn("ข้ามไฟล์: ไม่พบคอลัมน์บังคับในไฟล์", file.name);
+                continue;
+            }
+
+            const surveyId = Date.now() + Math.random();
+            importedSurveyIds.push(surveyId);
+            const txSurvey = db.transaction('surveys', 'readwrite');
+            txSurvey.objectStore('surveys').put({ id: surveyId, fileName: file.name });
+            await transactionDone(txSurvey);
+            
+            const txDet = db.transaction('detections', 'readwrite');
+            const storeDet = txDet.objectStore('detections');
+            
+            for (let i = 1; i < lines.length; i++) {
+                const p = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (p.length < 3) continue;
+                
+                const vib = parseFloat(p[vibIdx]);
+                const lat = parseFloat(p[latIdx]);
+                const lon = parseFloat(p[lonIdx]);
+                const speed = spdIdx !== -1 ? parseFloat(p[spdIdx]) || 0 : 0;
+                const acc = accIdx !== -1 ? parseFloat(p[accIdx]) : 0;
+                if (!Number.isFinite(vib)) continue;
+                if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) continue;
+                if (accIdx !== -1 && (!Number.isFinite(acc) || acc > DATA_MAX_ACC_CM)) continue;
+                if (vib >= 0.1) {
+                    storeDet.put({
+                        lat, 
+                        lon,
+                        speed, 
+                        zForce: vib,
+                        time: timeIdx !== -1 ? p[timeIdx].replace(/['"]/g, '').trim() : String(i), 
+                        imageFile: imgIdx !== -1 ? p[imgIdx].replace(/['"]/g, '').trim() : "-", 
+                        eventId: eventIdx !== -1 ? p[eventIdx].replace(/['"]/g, '').trim() : "-",
+                        surveyId
+                    });
+                }
+            }
+            await transactionDone(txDet);
+        }
+        document.getElementById('loadingOverlay').style.display = 'none';
+        document.getElementById('uploadStatus').textContent = '';
+        showToast("นำเข้าข้อมูลสำเร็จ");
+        await refreshAll(true);
+    }
+
+
+
+    function getEventKey(det) {
+        if (det.eventId && det.eventId !== '-') return `${det.surveyId}:event:${det.eventId}`;
+        if (det.imageFile && det.imageFile !== '-') return `${det.surveyId}:image:${det.imageFile}`;
+        return null;
+    }
+
+    function buildEventDetections(rows) {
+        const eventMap = new Map();
+        const ungroupedRows = [];
+
+        rows.forEach(row => {
+            const key = getEventKey(row);
+            if (!key) {
+                ungroupedRows.push(row);
+                return;
+            }
+
+            const current = eventMap.get(key);
+            if (!current || row.zForce > current.zForce) {
+                eventMap.set(key, { ...row, sampleCount: (current ? current.sampleCount : 0) + 1 });
+            } else {
+                current.sampleCount = (current.sampleCount || 1) + 1;
+            }
+        });
+
+        return eventMap.size ? [...eventMap.values()] : ungroupedRows;
+    }
+
+    function getColorByLabel(label) {
+        if(label === 'critical') return '#ef4444'; 
+        if(label === 'urgent') return '#f97316';   
+        if(label === 'moderate') return '#eab308'; 
+        return '#22c55e'; 
+    }
+
+    function renderMarkers(detections, fit = false) {
+        allMarkers.forEach(m => m.map = null);
+        allMarkers = [];
+        const bounds = new google.maps.LatLngBounds();
+
+        detections.forEach(det => {
+            const color = getColorByLabel(det.priorityLabel);
+            const size = Math.min(Math.max(10 + (det.zForce * 15), 10), 30);
+            
+            const markerDiv = document.createElement('div');
+            markerDiv.className = 'custom-marker';
+            markerDiv.style.width = markerDiv.style.height = `${size}px`;
+            markerDiv.style.backgroundColor = color;
+            markerDiv.style.borderRadius = '50%';
+            markerDiv.style.border = '2px solid #ffffff';
+            markerDiv.style.boxShadow = '0 2px 4px rgba(0,0,0,0.4)';
+            markerDiv.style.position = 'absolute';
+            markerDiv.style.transform = 'translate(-50%, -50%)';
+
+            const marker = new google.maps.marker.AdvancedMarkerElement({
+                position: { lat: det.lat, lng: det.lon },
+                map: map,
+                content: markerDiv,
+                gmpClickable: true
+            });
+
+            markerDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const imgId = "img-" + Math.random().toString(36).substr(2, 9);
+                
+                const hasImage = det.imageFile && det.imageFile !== "-";
+                const initialImgContent = hasImage 
+                    ? '<span style="font-size:11px; color:#94a3b8;">กำลังโหลดภาพ...</span>' 
+                    : '<span style="font-size:11px; color:var(--text-muted);">ไม่มีรูปภาพประกอบ</span>';
+
+                infoWindow.setContent(`
+                    <div style="padding: 8px 14px 14px 14px; min-width:270px; font-family:var(--font);">
+                        <div class="iw-header" style="margin-bottom:10px;">
+                            <span class="badge badge-${det.priorityLabel}" style="font-size:14px; padding:4px 12px;">${getPriorityText(det.priorityLabel)}</span>
+                        </div>
+                        <div style="font-size:15px; margin-bottom:12px; display:flex; flex-direction:column; gap:8px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="color:#64748b; font-size:15px;">แรงสั่น:</span>
+                                <strong style="color:${color}; font-size:18px;">${det.zForce.toFixed(3)} G</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="color:#64748b; font-size:15px;">ความเร็ว:</span>
+                                <strong style="font-size:15px;">${det.speed.toFixed(1)} km/h</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="color:#64748b; font-size:15px;">พิกัด:</span>
+                                <strong style="font-size:13px; color:#475569;">${det.lat.toFixed(6)}, ${det.lon.toFixed(6)}</strong>
+                            </div>
+                        </div>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${det.lat},${det.lon}" target="_blank" class="btn btn-primary" style="display:flex; justify-content:center; padding:8px; margin-bottom:10px; text-decoration:none; color:white; font-size:14px;">นำทางไปยังจุดนี้</a>
+                        <div id="${imgId}" style="text-align:center; min-height:80px; background:#f8fafc; border-radius:6px; display:flex; align-items:center; justify-content:center; border:1px dashed #cbd5e1;">
+                            ${initialImgContent}
+                        </div>
+                    </div>
+                `);
+                infoWindow.open({ anchor: marker, map: map });
+
+                if (hasImage) {
+                    const req = db.transaction('images', 'readonly').objectStore('images').get(det.imageFile);
+                    req.onsuccess = () => {
+                        if (req.result) {
+                            const url = URL.createObjectURL(req.result.fileData);
+                            document.getElementById(imgId).innerHTML = `<img src="${url}" style="width:100%; border-radius:4px; display:block;">`;
+                        } else {
+                            document.getElementById(imgId).innerHTML = '<span style="font-size:11px; color:var(--danger);">ไม่พบไฟล์รูปภาพ</span>';
+                        }
+                    };
+                }
+            });
+            allMarkers.push(marker);
+            bounds.extend(marker.position);
+        });
+        if (fit && detections.length > 0) map.fitBounds(bounds);
+    }
+
+    async function refreshAll(fit = false) {
+        allDetections = await requestToPromise(db.transaction('detections', 'readonly').objectStore('detections').getAll());
+        applyDynamicFilters(fit);
+
+        const surveys = await requestToPromise(db.transaction('surveys', 'readonly').objectStore('surveys').getAll());
+        document.getElementById('surveyList').innerHTML = surveys.map(s => `
+                <div class="survey-item">
+                    <span><i class="fi fi-rr-document"></i> ${s.fileName}</span>
+                    <button class="btn btn-danger btn-sm" onclick="dbDeleteSurv(${s.id})"><i class="fi fi-rr-trash" style="color:#ef4444;"></i> ลบไฟล์</button>
+                </div>`).join('');
+    }
+
+    function applyDynamicFilters(fit = false) {
+        const critical = parseFloat(document.getElementById('criticalSlider').value);
+        const upper = parseFloat(document.getElementById('upperSlider').value);
+        const lower = parseFloat(document.getElementById('lowerSlider').value);
+        
+        document.getElementById('criticalVal').textContent = critical.toFixed(2);
+        document.getElementById('upperVal').textContent = upper.toFixed(2);
+        document.getElementById('lowerVal').textContent = lower.toFixed(2);
+
+        document.getElementById('descCritical').textContent = `≥ ${critical.toFixed(2)} G`;
+        document.getElementById('descUrgent').textContent = `${upper.toFixed(2)} - ${(critical - 0.01).toFixed(2)} G`;
+        document.getElementById('descModerate').textContent = `${lower.toFixed(2)} - ${(upper - 0.01).toFixed(2)} G`;
+        document.getElementById('descNormal').textContent = `< ${lower.toFixed(2)} G`;
+
+        const filtered = allDetections.map(d => {
+            let label = 'normal';
+            if (d.zForce >= critical) label = 'critical';
+            else if (d.zForce >= upper) label = 'urgent';
+            else if (d.zForce >= lower) label = 'moderate';
+            return { ...d, priorityLabel: label };
+        });
+
+        const eventDetections = buildEventDetections(filtered);
+        const mapMarkers = eventDetections.filter(d => d.priorityLabel !== 'normal');
+        
+        renderMarkers(mapMarkers, fit);
+        renderTable(eventDetections);
+        updateCharts(eventDetections, filtered);
+        updateStats(eventDetections);
+    }
+
+    function renderTable(d) {
+        const tbody = document.getElementById('tableBody');
+        let filtered = currentFilter === 'all' ? d : d.filter(x => x.priorityLabel === currentFilter);
+        
+        tbody.innerHTML = filtered.sort((a,b) => b.zForce - a.zForce).slice(0, 100).map((x, i) => `
+            <tr onclick="map.panTo({lat:${x.lat}, lng:${x.lon}}); map.setZoom(19);" style="cursor:pointer;">
+                <td>${i + 1}</td>
+                <td><span class="badge badge-${x.priorityLabel}">${getPriorityText(x.priorityLabel)}</span></td>
+                <td><strong>${x.zForce.toFixed(3)}</strong></td>
+                <td>${x.speed.toFixed(1)}</td>
+
+                <td style="font-size:10px; color:var(--text-muted);">${x.lat.toFixed(6)}, ${x.lon.toFixed(6)}</td>
+            </tr>
+        `).join('');
+        document.getElementById('tableEmpty').style.display = filtered.length ? 'none' : 'block';
+    }
+
+    function getPriorityText(l) { 
+        if (l === 'critical') return 'วิกฤต';
+        if (l === 'urgent') return 'เร่งด่วน';
+        if (l === 'moderate') return 'เฝ้าระวัง';
+        return 'ปกติ';
+    }
+    
+    function updateStats(d) {
+        document.getElementById('statTotal').textContent = d.length;
+        document.getElementById('statCritical').textContent = d.filter(x => x.priorityLabel === 'critical').length;
+        document.getElementById('statUrgent').textContent = d.filter(x => x.priorityLabel === 'urgent').length;
+        document.getElementById('statModerate').textContent = d.filter(x => x.priorityLabel === 'moderate').length;
+        document.getElementById('statNormal').textContent = d.filter(x => x.priorityLabel === 'normal').length;
+    }
+
+    function initCharts() {
+        zForceChart = new Chart(document.getElementById('zForceChart'), { 
+            type: 'line', 
+            data: { 
+                labels: ['-'], 
+                datasets: [{ 
+                    label: 'แรงสั่นสะเทือน (G)', 
+                    data: [null], 
+                    borderColor: '#2563eb', 
+                    backgroundColor: 'rgba(37,99,235,0.1)', 
+                    fill: true, tension: 0.3, pointRadius: 2 
+                }] 
+            }, 
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { display: false },
+                    title: { display: false }
+                }, 
+                scales: { 
+                    y: { beginAtZero: true, suggestedMax: 1.5 },
+                    x: { display: true }
+                } 
+            } 
+        });
+        
+        severityChart = new Chart(document.getElementById('severityChart'), { 
+            type: 'doughnut', 
+            data: { 
+                labels: ['วิกฤต', 'เร่งด่วน', 'เฝ้าระวัง', 'ปกติ', 'ยังไม่มีข้อมูล'], 
+                datasets: [{ 
+                    data: [0, 0, 0, 0, 1], 
+                    backgroundColor: ['#ef4444', '#f97316', '#eab308', '#22c55e', '#e2e8f0'] 
+                }] 
+            }, 
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
+                }
+            } 
+        });
+    }
+
+    function updateCharts(events, rawRows) {
+        const source = chartMode === 'raw' ? rawRows : events;
+        const sorted = [...source].sort((a,b) => a.time > b.time ? 1 : -1);
+        const labelPrefix = chartMode === 'raw' ? 'Sample' : 'Event';
+        
+        if (sorted.length === 0) {
+            // แสดงกราฟเปล่าเมื่อไม่มีข้อมูล
+            zForceChart.data.labels = ['-'];
+            zForceChart.data.datasets[0].data = [null];
+            severityChart.data.datasets[0].data = [0, 0, 0, 0, 1]; // placeholder grey
+            severityChart.data.labels = ['วิกฤต', 'เร่งด่วน', 'เฝ้าระวัง', 'ปกติ', 'ยังไม่มีข้อมูล'];
+            severityChart.data.datasets[0].backgroundColor = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#e2e8f0'];
+        } else {
+            zForceChart.data.labels = sorted.map((_, index) => `${labelPrefix} ${index + 1}`);
+            zForceChart.data.datasets[0].data = sorted.map(x => x.zForce);
+            severityChart.data.datasets[0].data = [
+                events.filter(x => x.priorityLabel === 'critical').length,
+                events.filter(x => x.priorityLabel === 'urgent').length,
+                events.filter(x => x.priorityLabel === 'moderate').length,
+                events.filter(x => x.priorityLabel === 'normal').length,
+                0
+            ];
+            severityChart.data.labels = ['วิกฤต', 'เร่งด่วน', 'เฝ้าระวัง', 'ปกติ', ''];
+            severityChart.data.datasets[0].backgroundColor = ['#ef4444', '#f97316', '#eab308', '#22c55e', 'transparent'];
+        }
+        zForceChart.data.datasets[0].label = chartMode === 'raw' ? 'Raw vibration samples (G)' : 'Event max vibration (G)';
+        zForceChart.update();
+        severityChart.update();
+    }
+
+    function setChartMode(mode, btn) {
+        chartMode = mode;
+        document.querySelectorAll('[data-chart-mode]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        applyDynamicFilters(false);
+    }
+
+    function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+
+    function requestToPromise(req) {
+        return new Promise((resolve, reject) => {
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    }
+
+    function transactionDone(tx) {
+        return new Promise((resolve, reject) => {
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+            tx.onabort = () => reject(tx.error);
+        });
+    }
+
+
+    
+    async function clearAllData() { 
+        if(confirm('ล้างข้อมูลทั้งหมดในระบบ?')) { 
+            const tx = db.transaction(['surveys','detections','images'],'readwrite');
+            tx.objectStore('surveys').clear();
+            tx.objectStore('detections').clear();
+            tx.objectStore('images').clear();
+            await transactionDone(tx);
+            allDetections = [];
+            allMarkers.forEach(m => m.map = null);
+            allMarkers = [];
+            await refreshAll(true);
+            showToast('ล้างข้อมูลทั้งหมดสำเร็จ');
+        } 
+    }
+    
+    async function dbDeleteSurv(id) { 
+        if(confirm('ลบไฟล์การสำรวจนี้ออกจากระบบ?')) { 
+            const detections = await requestToPromise(db.transaction('detections', 'readonly').objectStore('detections').getAll());
+            const imageFiles = detections
+                .filter(d => d.surveyId === id && d.imageFile && d.imageFile !== '-')
+                .map(d => d.imageFile);
+
+            const tx = db.transaction(['surveys','detections','images'], 'readwrite');
+            tx.objectStore('surveys').delete(id);
+            detections.filter(d => d.surveyId === id).forEach(d => tx.objectStore('detections').delete(d.id));
+            imageFiles.forEach(fileName => tx.objectStore('images').delete(fileName));
+            await transactionDone(tx);
+            refreshAll(true); 
+        } 
+    }
+    
+    function filterTable(f, btn) { 
+        currentFilter = f; 
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); 
+        btn.classList.add('active'); 
+        applyDynamicFilters(false); 
+    }
+
+
+    document.getElementById('folderInput').addEventListener('change', e => processFiles(e.target.files));
+    document.getElementById('fileInput').addEventListener('change', e => processFiles(e.target.files));
+    document.getElementById('criticalSlider').addEventListener('input', () => applyDynamicFilters(false));
+    document.getElementById('upperSlider').addEventListener('input', () => applyDynamicFilters(false));
+    document.getElementById('lowerSlider').addEventListener('input', () => applyDynamicFilters(false));
+
+    // Drag-and-drop support
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = 'var(--primary)'; });
+    dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = ''; });
+    dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.style.borderColor = ''; processFiles(e.dataTransfer.files); });
+
+    </script>
+</body>
+</html>
