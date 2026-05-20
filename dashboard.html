@@ -264,10 +264,13 @@
             
             // Extract folder name if available
             let displayFileName = file.name;
-            if (file.webkitRelativePath) {
-                const parts = file.webkitRelativePath.split('/');
-                if (parts.length > 1) {
-                    displayFileName = parts[0]; // Show just the folder name e.g. "Survey_20260520"
+            if (file.webkitRelativePath && file.webkitRelativePath.includes('/')) {
+                displayFileName = file.webkitRelativePath.split('/')[0];
+            } else {
+                // Fallback: Extract timestamp from CSV filename (e.g. single_cam_20260515_075716.csv -> Survey_20260515_075716)
+                const match = file.name.match(/_(\d{8}_\d{6})\.csv/i);
+                if (match) {
+                    displayFileName = "Survey_" + match[1];
                 }
             }
 
