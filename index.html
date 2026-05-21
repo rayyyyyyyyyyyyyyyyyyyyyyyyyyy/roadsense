@@ -848,9 +848,27 @@
 
     document.getElementById('folderInput').addEventListener('change', e => processFiles(e.target.files));
     document.getElementById('fileInput').addEventListener('change', e => processFiles(e.target.files));
-    document.getElementById('criticalSlider').addEventListener('input', () => applyDynamicFilters(false));
-    document.getElementById('upperSlider').addEventListener('input', () => applyDynamicFilters(false));
-    document.getElementById('lowerSlider').addEventListener('input', () => applyDynamicFilters(false));
+    const critInput = document.getElementById('criticalSlider');
+    const upperInput = document.getElementById('upperSlider');
+    const lowerInput = document.getElementById('lowerSlider');
+
+    critInput.addEventListener('input', () => {
+        if (parseFloat(critInput.value) < parseFloat(upperInput.value)) upperInput.value = critInput.value;
+        if (parseFloat(upperInput.value) < parseFloat(lowerInput.value)) lowerInput.value = upperInput.value;
+        applyDynamicFilters(false);
+    });
+
+    upperInput.addEventListener('input', () => {
+        if (parseFloat(upperInput.value) > parseFloat(critInput.value)) critInput.value = upperInput.value;
+        if (parseFloat(upperInput.value) < parseFloat(lowerInput.value)) lowerInput.value = upperInput.value;
+        applyDynamicFilters(false);
+    });
+
+    lowerInput.addEventListener('input', () => {
+        if (parseFloat(lowerInput.value) > parseFloat(upperInput.value)) upperInput.value = lowerInput.value;
+        if (parseFloat(upperInput.value) > parseFloat(critInput.value)) critInput.value = upperInput.value;
+        applyDynamicFilters(false);
+    });
 
     // Drag-and-drop support
     const dropZone = document.getElementById('dropZone');
