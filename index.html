@@ -637,6 +637,7 @@
                     <span><i class="fi fi-rr-document"></i> ${s.fileName}</span>
                     <button class="btn btn-danger btn-sm" onclick="dbDeleteSurv(${s.id})"><i class="fi fi-rr-trash" style="color:#B91C1C;"></i> <span data-i18n="deleteFile" style="color:#B91C1C;">${t('deleteFile')}</span></button>
                 </div>`).join('');
+        applyTranslations();
     }
 
     function applyDynamicFilters(fit = false) {
