@@ -394,8 +394,8 @@
         currentLang = lang;
         localStorage.setItem('vibromap_lang', lang);
         applyTranslations();
-        // Re-render dynamic content
-        if (allDetections.length > 0) applyDynamicFilters(false);
+        // Re-render all dynamic content including survey list delete buttons
+        if (db) refreshAll(false);
     }
 
     // Apply saved language on load
@@ -635,7 +635,7 @@
         document.getElementById('surveyList').innerHTML = surveys.map(s => `
                 <div class="survey-item">
                     <span><i class="fi fi-rr-document"></i> ${s.fileName}</span>
-                    <button class="btn btn-danger btn-sm" onclick="dbDeleteSurv(${s.id})"><i class="fi fi-rr-trash" style="color:#ef4444;"></i> ${t('deleteFile')}</button>
+                    <button class="btn btn-danger btn-sm" onclick="dbDeleteSurv(${s.id})"><i class="fi fi-rr-trash" style="color:#B91C1C;"></i> <span data-i18n="deleteFile" style="color:#B91C1C;">${t('deleteFile')}</span></button>
                 </div>`).join('');
     }
 
