@@ -55,19 +55,19 @@
                 <div class="stat-value" id="statTotal" style="color: #334155;">0</div>
             </div>
             <div class="stat-card" style="border: 2px; background-color: #ffffff;">
-                <div class="stat-label" data-i18n="statCriticalLabel" style="color: #ef4444;">Critical (Red)</div>
+                <div class="stat-label" data-i18n="statCriticalLabel" style="color: #ef4444;">Critical – Repair Immediately</div>
                 <div class="stat-value" id="statCritical" style="color: #ef4444;">0</div>
             </div>
             <div class="stat-card" style="border: 2px; background-color: #ffffff;">
-                <div class="stat-label" data-i18n="statUrgentLabel" style="color: #f97316;">Urgent (Orange)</div>
+                <div class="stat-label" data-i18n="statUrgentLabel" style="color: #f97316;">Urgent – Repair Soon</div>
                 <div class="stat-value" id="statUrgent" style="color: #f97316;">0</div>
             </div>
             <div class="stat-card" style="border: 2px; background-color: #ffffff;">
-                <div class="stat-label" data-i18n="statModerateLabel" style="color: #a16207;">Moderate (Yellow)</div>
+                <div class="stat-label" data-i18n="statModerateLabel" style="color: #a16207;">Moderate – Monitor & Schedule</div>
                 <div class="stat-value" id="statModerate" style="color: #a16207;">0</div>
             </div>
             <div class="stat-card" style="border: 2px; background-color: #ffffff;">
-                <div class="stat-label" data-i18n="statNormalLabel" style="color: #166534;">Normal (Green)</div>
+                <div class="stat-label" data-i18n="statNormalLabel" style="color: #166534;">Normal – No Repair Needed</div>
                 <div class="stat-value" id="statNormal" style="color: #166534;">0</div>
             </div>
         </section>
@@ -96,17 +96,17 @@
                     <div class="control-section">
                         <label data-i18n="analysisLabel">Analysis Level Settings</label>
                         <div class="slider-group">
-                            <span data-i18n="sliderCritical">Critical (Red):</span>
+                            <span data-i18n="sliderCritical">Critical – Repair Immediately:</span>
                             <input type="range" id="criticalSlider" min="1.0" max="2.0" step="0.05" value="1.2">
                             <span class="slider-val" id="criticalVal" style="color:#ef4444;">1.20</span>
                         </div>
                         <div class="slider-group">
-                            <span data-i18n="sliderUrgent">Urgent (Orange):</span>
+                            <span data-i18n="sliderUrgent">Urgent – Repair Soon:</span>
                             <input type="range" id="upperSlider" min="0.5" max="1.5" step="0.05" value="1.0">
                             <span class="slider-val" id="upperVal" style="color:#f97316;">1.00</span>
                         </div>
                         <div class="slider-group">
-                            <span data-i18n="sliderModerate">Moderate (Yellow):</span>
+                            <span data-i18n="sliderModerate">Moderate – Monitor & Schedule:</span>
                             <input type="range" id="lowerSlider" min="0.1" max="1.5" step="0.05" value="0.7">
                             <span class="slider-val" id="lowerVal" style="color:#eab308;">0.70</span>
                         </div>
@@ -114,12 +114,12 @@
                         <div style="margin-top: 12px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 12px;">
                             <strong data-i18n="severityDesc" style="color: var(--text-muted);">Current Severity Criteria:</strong>
                             <ul style="list-style: none; margin-top: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                <li>🔴 <span data-i18n="levelCritical">Critical</span>: <strong id="descCritical" style="color:#ef4444;">≥ 1.20 G</strong></li>
-                                <li>🟠 <span data-i18n="levelUrgent">Urgent</span>: <strong id="descUrgent" style="color:#f97316;">1.00 - 1.19 G</strong></li>
-                                <li>🟡 <span data-i18n="levelModerate">Moderate</span>: <strong id="descModerate" style="color:#eab308;">0.70 - 0.99 G</strong></li>
-                                <li>🟢 <span data-i18n="levelNormal">Normal</span>: <strong id="descNormal" style="color:#22c55e;">&lt; 0.70 G</strong></li>
+                                <li>🔴 <span data-i18n="levelCritical">Critical – Repair Immediately</span>: <strong id="descCritical" style="color:#ef4444;">≥ 1.20 G</strong></li>
+                                <li>🟠 <span data-i18n="levelUrgent">Urgent – Repair Soon</span>: <strong id="descUrgent" style="color:#f97316;">1.00 - 1.19 G</strong></li>
+                                <li>🟡 <span data-i18n="levelModerate">Moderate – Monitor & Schedule</span>: <strong id="descModerate" style="color:#eab308;">0.70 - 0.99 G</strong></li>
+                                <li>🟢 <span data-i18n="levelNormal">Normal – No Repair Needed</span>: <strong id="descNormal" style="color:#22c55e;">&lt; 0.70 G</strong></li>
                             </ul>
-                            <p data-i18n="greenNote" style="font-size:10px; color:var(--text-light); margin-top:8px;">* Green pins (Normal) are automatically hidden from the map</p>
+                            <p data-i18n="greenNote" style="font-size:10px; color:var(--text-light); margin-top:8px;">* Normal level (No Repair Needed) pins are automatically hidden from the map</p>
                         </div>
                     </div>
                 </div>
@@ -222,25 +222,25 @@
         en: {
             loading: 'Processing...',
             statTotalLabel: 'Total Detections',
-            statCriticalLabel: 'Critical (Red)',
-            statUrgentLabel: 'Urgent (Orange)',
-            statModerateLabel: 'Moderate (Yellow)',
-            statNormalLabel: 'Normal (Green)',
+            statCriticalLabel: 'Critical – Repair Immediately',
+            statUrgentLabel: 'Urgent – Repair Soon',
+            statModerateLabel: 'Moderate – Monitor & Schedule',
+            statNormalLabel: 'Normal – No Repair Needed',
             controlHeader: 'Data Management & Analysis',
             uploadLabel: 'Upload Project Folder (CSV + Images)',
             dropText: 'Drag & drop files here, or choose below',
             selectFolder: 'Select Folder',
             selectFiles: 'Select Files',
             analysisLabel: 'Analysis Level Settings',
-            sliderCritical: 'Critical (Red):',
-            sliderUrgent: 'Urgent (Orange):',
-            sliderModerate: 'Moderate (Yellow):',
+            sliderCritical: 'Critical – Repair Immediately:',
+            sliderUrgent: 'Urgent – Repair Soon:',
+            sliderModerate: 'Moderate – Monitor & Schedule:',
             severityDesc: 'Current Severity Criteria:',
-            levelCritical: 'Critical',
-            levelUrgent: 'Urgent',
-            levelModerate: 'Moderate',
-            levelNormal: 'Normal',
-            greenNote: '* Green pins (Normal) are automatically hidden from the map',
+            levelCritical: 'Critical – Repair Immediately',
+            levelUrgent: 'Urgent – Repair Soon',
+            levelModerate: 'Moderate – Monitor & Schedule',
+            levelNormal: 'Normal – No Repair Needed',
+            greenNote: '* Normal level (No Repair Needed) pins are automatically hidden from the map',
             legendTitle: 'Damage Level:',
             legendModerate: 'Moderate',
             legendUrgent: 'Urgent',
@@ -267,10 +267,10 @@
             confirmClearAll: 'Clear all data in the system?',
             clearSuccess: 'All data cleared successfully',
             confirmDeleteSurvey: 'Delete this survey file from the system?',
-            priorityCritical: 'Critical',
-            priorityUrgent: 'Urgent',
-            priorityModerate: 'Moderate',
-            priorityNormal: 'Normal',
+            priorityCritical: 'Repair Immediately',
+            priorityUrgent: 'Repair Soon',
+            priorityModerate: 'Monitor & Schedule',
+            priorityNormal: 'No Repair Needed',
             iwVibration: 'Vibration:',
             iwSpeed: 'Speed:',
             iwCoords: 'Coordinates:',
@@ -281,34 +281,34 @@
             chartLabelVib: 'Vibration (G)',
             chartRawLabel: 'Raw vibration samples (G)',
             chartEventLabel: 'Event max vibration (G)',
-            chartCritical: 'Critical',
-            chartUrgent: 'Urgent',
-            chartModerate: 'Moderate',
-            chartNormal: 'Normal',
+            chartCritical: 'Repair Immediately',
+            chartUrgent: 'Repair Soon',
+            chartModerate: 'Monitor & Schedule',
+            chartNormal: 'No Repair Needed',
             chartNoData: 'No data yet'
         },
         th: {
             loading: 'กำลังประมวลผล...',
             statTotalLabel: 'จุดที่พบทั้งหมด',
-            statCriticalLabel: 'วิกฤต (แดง)',
-            statUrgentLabel: 'เร่งด่วน (ส้ม)',
-            statModerateLabel: 'เฝ้าระวัง (เหลือง)',
-            statNormalLabel: 'ปกติ (เขียว)',
+            statCriticalLabel: 'วิกฤต – ควรซ่อมโดยด่วน',
+            statUrgentLabel: 'เร่งด่วน – ควรซ่อมเร็วๆ นี้',
+            statModerateLabel: 'เฝ้าระวัง – ติดตามและวางแผนซ่อม',
+            statNormalLabel: 'ปกติ – ไม่จำเป็นต้องซ่อม',
             controlHeader: 'จัดการข้อมูลและการวิเคราะห์',
             uploadLabel: 'อัปโหลดโฟลเดอร์โครงการ (CSV + Images)',
             dropText: 'ลากไฟล์มาวาง หรือเลือกวิธีด้านล่าง',
             selectFolder: 'เลือกโฟลเดอร์',
             selectFiles: 'เลือกหลายไฟล์',
             analysisLabel: 'ตั้งค่าระดับการวิเคราะห์',
-            sliderCritical: 'วิกฤต (แดง):',
-            sliderUrgent: 'เร่งด่วน (ส้ม):',
-            sliderModerate: 'เฝ้าระวัง (เหลือง):',
+            sliderCritical: 'วิกฤต – ควรซ่อมโดยด่วน:',
+            sliderUrgent: 'เร่งด่วน – ควรซ่อมเร็วๆ นี้:',
+            sliderModerate: 'เฝ้าระวัง – ติดตามและวางแผนซ่อม:',
             severityDesc: 'คำอธิบายเกณฑ์ความรุนแรงปัจจุบัน:',
-            levelCritical: 'วิกฤต',
-            levelUrgent: 'เร่งด่วน',
-            levelModerate: 'เฝ้าระวัง',
-            levelNormal: 'ปกติ',
-            greenNote: '* หมุดสีเขียว (ปกติ) จะถูกซ่อนจากแผนที่โดยอัตโนมัติ',
+            levelCritical: 'วิกฤต – ควรซ่อมโดยด่วน',
+            levelUrgent: 'เร่งด่วน – ควรซ่อมเร็วๆ นี้',
+            levelModerate: 'เฝ้าระวัง – ติดตามและวางแผนซ่อม',
+            levelNormal: 'ปกติ – ไม่จำเป็นต้องซ่อม',
+            greenNote: '* ระดับปกติ (ไม่จำเป็นต้องซ่อม) จะถูกซ่อนจากแผนที่โดยอัตโนมัติ',
             legendTitle: 'ระดับความเสียหาย:',
             legendModerate: 'เฝ้าระวัง',
             legendUrgent: 'เร่งด่วน',
@@ -335,10 +335,10 @@
             confirmClearAll: 'ล้างข้อมูลทั้งหมดในระบบ?',
             clearSuccess: 'ล้างข้อมูลทั้งหมดสำเร็จ',
             confirmDeleteSurvey: 'ลบไฟล์การสำรวจนี้ออกจากระบบ?',
-            priorityCritical: 'วิกฤต',
-            priorityUrgent: 'เร่งด่วน',
-            priorityModerate: 'เฝ้าระวัง',
-            priorityNormal: 'ปกติ',
+            priorityCritical: 'ควรซ่อมโดยด่วน',
+            priorityUrgent: 'ควรซ่อมเร็วๆ นี้',
+            priorityModerate: 'ติดตามและวางแผนซ่อม',
+            priorityNormal: 'ไม่จำเป็นต้องซ่อม',
             iwVibration: 'แรงสั่น:',
             iwSpeed: 'ความเร็ว:',
             iwCoords: 'พิกัด:',
@@ -349,10 +349,10 @@
             chartLabelVib: 'แรงสั่นสะเทือน (G)',
             chartRawLabel: 'Raw vibration samples (G)',
             chartEventLabel: 'Event max vibration (G)',
-            chartCritical: 'วิกฤต',
-            chartUrgent: 'เร่งด่วน',
-            chartModerate: 'เฝ้าระวัง',
-            chartNormal: 'ปกติ',
+            chartCritical: 'ควรซ่อมโดยด่วน',
+            chartUrgent: 'ควรซ่อมเร็วๆ นี้',
+            chartModerate: 'ติดตามและวางแผนซ่อม',
+            chartNormal: 'ไม่จำเป็นต้องซ่อม',
             chartNoData: 'ยังไม่มีข้อมูล'
         }
     };
