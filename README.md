@@ -37,4 +37,6 @@ The project is divided into three main components:
 ```
 
 ## Author & Acknowledgements
-Developed by Onuma DOKPIKUL during an international research internship at the National Institute of Technology, Okinawa College (NITOC), under the guidance of Professor Suriyon TANSURIYAVONG.
+Developed by **Onuma DOKPIKUL** during an international research internship at the National Institute of Technology, Okinawa College (NITOC), under the guidance of Professor Suriyon TANSURIYAVONG. 
+
+The development process of this project leveraged a nearly 100% AI-assisted workflow. Advanced AI tools were comprehensively utilized for code generation, system logic optimization, cross-platform debugging, and technical writing, highlighting the role of modern AI technologies in engineering research.
