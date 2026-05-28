@@ -155,7 +155,7 @@
                         <tr>
                             <th data-i18n="thRank">Rank</th>
                             <th data-i18n="thLevel">Level</th>
-                            <th data-i18n="thVibration">Vibration (G)</th>
+                            <th data-i18n="thVibration">Vibration</th>
                             <th data-i18n="thSpeed">Speed (km/h)</th>
 
                             <th data-i18n="thCoords">Coordinates (Lat, Lon)</th>
@@ -253,7 +253,7 @@
             filterNormal: 'Normal',
             thRank: 'Rank',
             thLevel: 'Level',
-            thVibration: 'Vibration (G)',
+            thVibration: 'Vibration',
             thSpeed: 'Speed (km/h)',
             thCoords: 'Coordinates (Lat, Lon)',
             noData: 'No data found',
@@ -278,9 +278,9 @@
             iwLoadingImg: 'Loading image...',
             iwNoImage: 'No image available',
             iwImageNotFound: 'Image file not found',
-            chartLabelVib: 'Vibration (G)',
-            chartRawLabel: 'Raw vibration samples (G)',
-            chartEventLabel: 'Event max vibration (G)',
+            chartLabelVib: 'Vibration',
+            chartRawLabel: 'Raw vibration samples',
+            chartEventLabel: 'Event max vibration',
             chartCritical: 'Critical',
             chartUrgent: 'Urgent',
             chartModerate: 'Moderate',
@@ -321,7 +321,7 @@
             filterNormal: 'ปกติ',
             thRank: 'ลำดับ',
             thLevel: 'ระดับ',
-            thVibration: 'แรงสั่น (G)',
+            thVibration: 'แรงสั่น',
             thSpeed: 'ความเร็ว (km/h)',
             thCoords: 'พิกัด (Lat, Lon)',
             noData: 'ไม่พบข้อมูล',
@@ -346,9 +346,9 @@
             iwLoadingImg: 'กำลังโหลดภาพ...',
             iwNoImage: 'ไม่มีรูปภาพประกอบ',
             iwImageNotFound: 'ไม่พบไฟล์รูปภาพ',
-            chartLabelVib: 'แรงสั่นสะเทือน (G)',
-            chartRawLabel: 'Raw vibration samples (G)',
-            chartEventLabel: 'Event max vibration (G)',
+            chartLabelVib: 'แรงสั่นสะเทือน',
+            chartRawLabel: 'Raw vibration samples',
+            chartEventLabel: 'Event max vibration',
             chartCritical: 'วิกฤต',
             chartUrgent: 'เร่งด่วน',
             chartModerate: 'เฝ้าระวัง',
@@ -590,7 +590,7 @@
                         <div style="font-size:15px; margin-bottom:12px; display:flex; flex-direction:column; gap:8px;">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
                                 <span style="color:#64748b; font-size:15px;">${t('iwVibration')}</span>
-                                <strong style="color:${color}; font-size:18px;">${det.zForce.toFixed(3)} G</strong>
+                                <strong style="color:${color}; font-size:18px;">${det.zForce.toFixed(3)}</strong>
                             </div>
                             <div style="display:flex; justify-content:space-between; align-items:center;">
                                 <span style="color:#64748b; font-size:15px;">${t('iwSpeed')}</span>
@@ -649,10 +649,10 @@
         document.getElementById('upperVal').textContent = upper.toFixed(2);
         document.getElementById('lowerVal').textContent = lower.toFixed(2);
 
-        document.getElementById('descCritical').textContent = `≥ ${critical.toFixed(2)} G`;
-        document.getElementById('descUrgent').textContent = `${upper.toFixed(2)} - ${(critical - 0.01).toFixed(2)} G`;
-        document.getElementById('descModerate').textContent = `${lower.toFixed(2)} - ${(upper - 0.01).toFixed(2)} G`;
-        document.getElementById('descNormal').textContent = `< ${lower.toFixed(2)} G`;
+        document.getElementById('descCritical').textContent = `≥ ${critical.toFixed(2)}`;
+        document.getElementById('descUrgent').textContent = `${upper.toFixed(2)} - ${(critical - 0.01).toFixed(2)}`;
+        document.getElementById('descModerate').textContent = `${lower.toFixed(2)} - ${(upper - 0.01).toFixed(2)}`;
+        document.getElementById('descNormal').textContent = `< ${lower.toFixed(2)}`;
 
         const filtered = allDetections.map(d => {
             let label = 'normal';
