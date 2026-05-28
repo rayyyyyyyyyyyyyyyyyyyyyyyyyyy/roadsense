@@ -34,3 +34,6 @@ The project is divided into three main components:
 ├── firmware_esp32/       # Source code for ESP32 data collection
 ├── logger_python/        # Core Python script for data processing and camera sync
 └── web_dashboard/        # Frontend files for web visualization and data management
+
+Author & Acknowledgements
+Developed by Onuma DOKPIKUL during an international research internship at the National Institute of Technology, Okinawa College (NITOC), under the guidance of Professor Suriyon TANSURIYAVONG.
