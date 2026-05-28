@@ -36,5 +36,5 @@ The project is divided into three main components:
 └── web_dashboard/        # Frontend files for web visualization and data management
 ```
 
-Author & Acknowledgements
+## Author & Acknowledgements
 Developed by Onuma DOKPIKUL during an international research internship at the National Institute of Technology, Okinawa College (NITOC), under the guidance of Professor Suriyon TANSURIYAVONG.
